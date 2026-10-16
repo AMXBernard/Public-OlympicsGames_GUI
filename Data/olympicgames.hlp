@@ -1,0 +1,23 @@
+-1__DNA GBRecords Graphic User Interface v2.5:    EOP
+    -1.1__But de l'application:    
+        Application de visualisation et gestion d'emploi du temps pour les EASH avec 2 modes de fonctionnement (Modification et Consultation).EOP 
+    -1.2__Initialisation de l'application:    
+        Lors du premier lancement de l'application, une boite de dialogue s'ouvre pour initialiser l'application. Vous devez renseigner:
+        Le Nom, le Prénom de la personne pour qui l'agenda sera créé ainsi que la date de la rentrée scolaire ce qui permettra de déterminer automatiquement si la semaines est Q1 ou Q2.
+        Tips : Effaçer le fichier 'C:\Users\"xxxxxx"\AppData\Local\Programs\EDT_AESH-v2\data\EDT_config.cfg', relancera une initialisation sans perdre les données de l'Emploi du Temps.EOP 
+    -1.3__Paramètres de l'application:    
+        Ouverture de la boite dialogue des paramètres de l'application. Elle visualise les emplacements des types de données.
+        "Dossier des données"   : dossier des sauvegardes des Emplois du Temps.
+        "Dossier des images"    : répertoire des images de l'application. C'est dans ce dossier que se trouve l'image de fond que vous pouvez afficher dans EDT. Elle doit être au format '.GIF' d'une taille de 1904x1080 pour pouvoir s'afficher plein écran HD. 
+        "Dossier des export"    : non utilisé dans cette version.
+        "Fichier des données"   : nom du fichier de l'emploi du temps de l'utilisateur.
+        "Fichier image de fond" : nom du fichier de l'image de fond.
+        "Fichier d'aide de EDT" : nom du fichier contenant le texte de l'aide de EDT v2.0  
+        Des cases à cocher dont le libellé est suffisamment explicite et une liste qui permet de choisir le mode de fonctionnement au démarrage de l'application.
+        Le bouton "Valider" sauvegarde les paramètres tels que choisis. Si le fichier de données est changé, l'application demandera si l'on veut redémarrer pour la prise en compte immédiate des données du nouveau fichier. Le bouton "Annuler" ferme la fenètre.
+        EOP
+    -1.4__Modes de fonctionnement:    
+        Le mode en cours "Modification" ou "Consultation" est affiché en bas à droite de l'écran (encart couleur brique!).
+        'Modification' permet de renseigner l'emploi du temps en choisissant un des éléments issus des liste de choix que l'on obtient en faisant clic Droit sur la case désirée. Chaque case comporte 2 champs de saisie :
+        En haut la liste des cours et en dessous la sélection de la salle où a lieu ce cours. Il est tout à fait possible de saisir un libellé qui n'est pas dans la liste des cours ou des salles.
+        'Consultation' permet quant'à lui d'avoir un visuel complet sur la semaine en cours (Q1 ou Q2) sans pouvoir en modifier le contenu.EOP
