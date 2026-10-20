@@ -25,14 +25,12 @@ This is free software, and you are welcome to redistribute it
 under certain conditions; type `show c' for details.
 """
 
-#import locale,re
 import pandas,csv
 
 from configs import *
-#from random import choice
 from math import isnan,nan
 from re import search
- 
+
  
 class AthleteEvents():
 
@@ -118,8 +116,11 @@ class AthleteEvents():
 
     @classmethod
     def load_athlete_events(cls, msgbox, options:App_Options=None) -> bool:
-        # ---- Création dictionnaire athlètes ----
-        evt_filename = op.join(options.olympicpath, options.athevent_file)
+        # ---------------------------------------------------------------------    
+        name,ext = op.splitext(options.athevent_file) 
+        fname = f"{name}_DEBUG{ext}" if DEBUG else options.athevent_file
+        # ------------------ Création dictionnaire athlètes -------------------
+        evt_filename = op.join(options.olympicpath, fname)
         if op.isfile(evt_filename) and not options.createEvtAthFile:
             if msgbox:
                 msgbox.boxtitle("Chargement fichier participations aux JO des athlètes")
@@ -330,8 +331,11 @@ class Athlete():
     @classmethod
     def load_athlete_bio(cls, msgbox, options:App_Options=None) -> bool:
         if not options: options = App_Options()
+        # ---------------------------------------------------------------------
+        name,ext = op.splitext(options.athlete_file) 
+        fname = f"{name}_DEBUG{ext}" if DEBUG else options.athlete_file
         # --------------- Création du dictionnaire des athlètes ---------------
-        bio_filename = op.join(options.olympicpath,options.athlete_file)
+        bio_filename = op.join(options.olympicpath,fname)
         if op.isfile(bio_filename):
             if msgbox:
                 msgbox.boxtitle("Chargement fichier des athlètes")
@@ -365,6 +369,11 @@ class Athlete():
     @classmethod
     def DumATHLETE(cls) -> "Athlete":
         return Athlete(0,"All Athlete","No genre","No date",nan,"-/- ","No countries","No noc","","",[])
+
+    @classmethod
+    def Get_Athlete(cls, athleteId:int, dumAthlete=None) -> "Athlete":
+        if not isinstance(dumAthlete, Athlete): dumAthlete = Athlete.DumATHLETE()
+        return Athlete.ATHLETES_Dico.get(athleteId, dumAthlete)
 
         
     def __init__(self, athlete_id:int,name:str,sex:str,born:str,height:float,weight:str,

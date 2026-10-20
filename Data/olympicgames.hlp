@@ -1,23 +1,43 @@
--1__DNA GBRecords Graphic User Interface v2.5:    EOP
+### Fichier exemple d'aide pour la librairie pyHelp v1.0 ### 
+
+Tout ce qui ne commence pas par '-' n'est pas considéré comme texte d'aide. Les balises sont expliquées chapitre 1.7 
+
+-0__DefaultTextFont:    ##Font:Times New Roman:14:normal:roman##
+EOP-
+
+-1__OlympicGames GUI v2.5:    EOP-    
     -1.1__But de l'application:    
-        Application de visualisation et gestion d'emploi du temps pour les EASH avec 2 modes de fonctionnement (Modification et Consultation).EOP 
-    -1.2__Initialisation de l'application:    
-        Lors du premier lancement de l'application, une boite de dialogue s'ouvre pour initialiser l'application. Vous devez renseigner:
-        Le Nom, le Prénom de la personne pour qui l'agenda sera créé ainsi que la date de la rentrée scolaire ce qui permettra de déterminer automatiquement si la semaines est Q1 ou Q2.
-        Tips : Effaçer le fichier 'C:\Users\"xxxxxx"\AppData\Local\Programs\EDT_AESH-v2\data\EDT_config.cfg', relancera une initialisation sans perdre les données de l'Emploi du Temps.EOP 
-    -1.3__Paramètres de l'application:    
-        Ouverture de la boite dialogue des paramètres de l'application. Elle visualise les emplacements des types de données.
-        "Dossier des données"   : dossier des sauvegardes des Emplois du Temps.
-        "Dossier des images"    : répertoire des images de l'application. C'est dans ce dossier que se trouve l'image de fond que vous pouvez afficher dans EDT. Elle doit être au format '.GIF' d'une taille de 1904x1080 pour pouvoir s'afficher plein écran HD. 
-        "Dossier des export"    : non utilisé dans cette version.
-        "Fichier des données"   : nom du fichier de l'emploi du temps de l'utilisateur.
-        "Fichier image de fond" : nom du fichier de l'image de fond.
-        "Fichier d'aide de EDT" : nom du fichier contenant le texte de l'aide de EDT v2.0  
-        Des cases à cocher dont le libellé est suffisamment explicite et une liste qui permet de choisir le mode de fonctionnement au démarrage de l'application.
-        Le bouton "Valider" sauvegarde les paramètres tels que choisis. Si le fichier de données est changé, l'application demandera si l'on veut redémarrer pour la prise en compte immédiate des données du nouveau fichier. Le bouton "Annuler" ferme la fenètre.
-        EOP
-    -1.4__Modes de fonctionnement:    
-        Le mode en cours "Modification" ou "Consultation" est affiché en bas à droite de l'écran (encart couleur brique!).
-        'Modification' permet de renseigner l'emploi du temps en choisissant un des éléments issus des liste de choix que l'on obtient en faisant clic Droit sur la case désirée. Chaque case comporte 2 champs de saisie :
-        En haut la liste des cours et en dessous la sélection de la salle où a lieu ce cours. Il est tout à fait possible de saisir un libellé qui n'est pas dans la liste des cours ou des salles.
-        'Consultation' permet quant'à lui d'avoir un visuel complet sur la semaine en cours (Q1 ou Q2) sans pouvoir en modifier le contenu.EOP
+        Application de visualisation de requettes sur les bases de données traitant des Editions des Jeux Olympique depuis les premiers jeux modernes ##TxtBold:24##Edition de 1896 à Athène à nos jours, ##TxtBold:27##Edtion Hiver 2022 à Beijing.
+        Ces bases sont accessibles sur internet à l'URL suivante :
+            ##TxtItalic:25##http://www.olympedia.org/
+            ##TxtItalic:112##https://www.kaggle.com/datasets/josephcheng123456/olympic-historical-dataset-from-olympediaorg    
+        Une fois initialisée, on obtient cette fenêtre principale :
+                ##Image01:application.png##
+        
+        EOP- 
+
+
+
+//*
+    -1.7__Les balises texte:    
+        ##Couleur:light blue:12##Vocabulaire:
+            'tab'  : 4 espaces
+            'EOP'  : end of paragraph
+        //*'-> -X'      : tiret puis un chiffre qui ne doit pas être répété
+           '-> -X.X'    : tiret puis deux chiffres séparés par un "."
+           '-> __....:' : 2 underscores puis le texte pour nommer le titre ou le paragraphe terminé par ':'
+           *//##Couleur:light blue:16##Syntaxe balises:        
+           ##Couleur:orange:28## 'Balise Titre'            : -X__titre : ##Image21:tab_46x28.png## EOP ##Image22:enter_69x28.png##    
+           ##Couleur:DarkOliveGreen1:28## 'Balise Paragraphe'       : -X.X__labelParagraph : ##Image21:tab_46x28.png## + ##Image23:enter_69x28.png##    
+            'Balise Mise En Evidence' : 'xxxx...xxxx' ##Image24:space.png## ":" ##Image24:space.png## : pour mettre en évidence le texte sélectionné entre simple quotes.
+            'Balise Entre Dbl Quotes' : "xxxxxx" pour mettre le mot, partie de texte ainsi que les doubles quotes qui le délimite en Gras.
+            'Balise image'            : ##ImageXX:filename.png## : pour insérer une image format "PNG" dans le texte comme ##Image25:3buttons.png##.  
+            'Balise mot en gras'      : ##TxtBold:nn## : pour mettre en ##TxtBold:4##gras le mot qui suit la balise ou "nn" est le nombre de caractères à mettre en gras. 
+            'Balise mot en italique'  : ##TxtItalic:nn## : pour mettre en ##TxtItalic:8##italique le mot qui suit la balise ou "nn" est le nombre de caractères à mettre en italique.
+            'Balise Couleur'          : ##Couleur:xxxxxx:nnn## : pour changer la couleur de fond d'un mot ou d'une partie du texte. Le nom de la couleur "xxxxxx" ici '##Couleur:pale green:10##pale green' est représenté soit par son ##TxtItalic:7##litéral, soit par sa valeur ##TxtItalic:12##hexadécimale "##Couleur:#a3e49c:7###a3e49c" et "nnn" est le nombre de caractères sur lesquels appliquer la couleur.
+            'Balise commentaire'      : Les balises de début et fin de commentaire sont comme en C/C++: "##TxtBold:4##// *" pour l'ouverture et "##TxtBold:4##* //" pour la fermeture d'un commentaire n'importe où dans le texte.
+        'Nb': Un espace avant ou après ##TxtBold:3##"*" a été ajouté pour que l'exemple ci-dessus ne soit pas considéré comme un commentaire.
+        
+        Le texte ci-après //* n'apparaitra pas dans l'aide paragraphe 1.2 *//##Couleur:#f55f42:19##n'est pas complet !//*c'est un commentaire*//
+        EOP-    
+*//

@@ -11,3 +11,15 @@ OlympicData/Olympic_Athlete_Bio_2022.csv
 OlympicData/Olympic_Athlete_Event_Results_2022.csv
 OlympicData/Olympic_athlete_events_2022.csv
 OlympicData/paris-2024-results-medals-oly-eng.csv
+Data/helptxt.hlp
+Script/__pycache__/athlete.cpython-39.pyc
+Script/__pycache__/configs.cpython-39.pyc
+Script/__pycache__/country.cpython-39.pyc
+Script/__pycache__/gui_tools.cpython-39.pyc
+Script/__pycache__/handle_csv.cpython-39.pyc
+Script/__pycache__/hlptools.cpython-39.pyc
+Script/__pycache__/linuxprt.cpython-39.pyc
+Script/__pycache__/medailles.cpython-39.pyc
+Script/__pycache__/resultats.cpython-39.pyc
+Script/__pycache__/sport.cpython-39.pyc
+OlympicData/__Olympic_athlete_events_DEBUG.csv__

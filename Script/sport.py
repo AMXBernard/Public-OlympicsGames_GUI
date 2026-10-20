@@ -121,7 +121,11 @@ class Sport():
     @classmethod
     def load_sportfile(cls,msgbox:Win_MessageBox, options:App_Options) -> bool:
         position_set = set()
-        spt_filename = op.join(options.olympicpath, options.sport_file)
+        # ---------------------------------------------------------------------
+        name,ext = op.splitext(options.sport_file) 
+        fname = f"{name}_DEBUG{ext}" if DEBUG else options.sport_file
+        # ------------- Chargement fichier Sport/Résultat/Athlète -------------
+        spt_filename = op.join(options.olympicpath, fname)
         if op.isfile(spt_filename):
             if msgbox:
                 msgbox.title("Chargement fichier des sports et épreuves")
@@ -139,7 +143,8 @@ class Sport():
                 edition = correct_edition(sp['edition'][i])
                 country = Country.NOC_Dict[sp['country_noc'][i]].country
                 dumAthlete = Athlete(sp['athlete_id'][i],sp['athlete'][i],"No genre","NA",nan,nan,country,sp['country_noc'][i],"","",[])
-                athlete = Athlete.ATHLETES_Dico.get(int(sp['athlete_id'][i]), dumAthlete)
+                athlete = Athlete.Get_Athlete(int(sp['athlete_id'][i]), dumAthlete)
+                #athlete = Athlete.ATHLETES_Dico.get(int(sp['athlete_id'][i]), dumAthlete)
                 # -------------------------------------------------------------
                 if not athEvent:
                     city = EditionGame.EDITIONS_Dict.get(edition, EditionGame.DumEDITGAME()).city

@@ -25,7 +25,7 @@ This is free software, and you are welcome to redistribute it
 under certain conditions; type `show c' for details.
 """
 
-import time
+import time, re
 import tkinter as tk
 import tkinter.font as tkFont
 import tkinter.ttk as ttk
@@ -37,7 +37,6 @@ from gui_tools import My_LabelFrame,Window_StateBar,ScrolledListbox,Win_MessageB
 from country import Country,EditionGame,MedalTally
 from resultats import Resultat
 from sport import Sport
-from re import search
 from math import nan
 
 # -------------------------------------------------------------------------
@@ -58,6 +57,9 @@ def correct_position(position) -> int:
     else: return nan
 # -------------------------------------------------------------------------
 
+RE_NAMEID:re.Pattern = re.compile(r'^([\D ]+?) \((\d*)',flags=0)
+RE_ATHLETE:re.Pattern = re.compile(r'\(([\d]+?)\)',flags=0)
+
 class Handle_CSV():
     
     def __init__(self, master, options:App_Options=None):
@@ -66,30 +68,32 @@ class Handle_CSV():
         self.__options:App_Options = options
         self.msgbox = Win_MessageBox(master, nobtn=True)
         
-        # ---- Initialisation des options par défaut si 'options' invalide ----
+        # ------ Patterns compilés pour la recherche d'athlètes etc ... -------
+        
+        # --- Initialisation options par défaut si 'options' invalide|None ----
         if not isinstance(options, App_Options): self.__options = App_Options()
-        # ---------------------------------------------------------------------                        
-        """ Loading files : Olympics_Country.csv, Olympics_Games.csv and Olympic_Games_Medal_Tally.csv """
+
+        # Loading files : Olympics_Country.csv, Olympics_Games.csv and Olympic_Games_Medal_Tally.csv 
         if not Country.load_countryfile(self.msgbox, options=self.__options):
             self.msgbox.message = f"{'Fichier des pays/organisateurs non lu.':^50}"
             self.msgbox.after(2000)
-        
-        """ Loading file : Olympic_Results.csv """
+
+        # ---------------- Loading file : Olympic_Results.csv -----------------
         if not Resultat.load_resultsfile(self.msgbox, options=self.__options):
             self.msgbox.message = f"{'Fichier des résultats non lu.':^50}"
             self.msgbox.after(2000)
-        
-        """ Loading file : athlete_events.csv """    
+
+        # ----------------- Loading file : athlete_events.csv -----------------
         if not AthleteEvents.load_athlete_events(self.msgbox, options=self.__options):
             self.msgbox.message = f"{'Fichier des athlètes events non lu.':^50}"
             self.msgbox.after(500)
-        
-        """ Loading file : Olympic_Athlete_Bio.csv """    
+
+        # --------------- Loading file : Olympic_Athlete_Bio.csv --------------
         if not Athlete.load_athlete_bio(self.msgbox, options=self.__options):
             self.msgbox.message = f"{'Fichier des athlètes non lu.':^50}"
             self.msgbox.after(2000)
 
-        """ Loading file : Olympic_Athlete_Event_Results.csv """
+        # ---------- Loading file : Olympic_Athlete_Event_Results.csv ---------
         if not Sport.load_sportfile(self.msgbox, options=self.__options):
             self.msgbox.message = f"{'Fichier des sports/épreuves non lu.':^50}"
             self.msgbox.after(2000)
@@ -105,9 +109,9 @@ class Handle_CSV():
         self.GLOBAL_AthSortList:list = ([])
         self.GLOBAL_AthleteListId:list = ([])
         self.GLOBAL_AthleteListName:list = ([])
-        self.GLOBAL_EditionList:list = self.edition.values()
-        self.GLOBAL_CountryList:list = Country.COUNTRY_Dico.values()
+        self.GLOBAL_CountryList:list = self.country.values()
         self.GLOBAL_EventList:list = self.athletevent.values()
+        self.GLOBAL_EditionList:list = self.edition.values()
         self.GLOBAL_SportList:list = self.sport.values()
         
     @property
@@ -147,15 +151,17 @@ class GUI_SearchSportEvt(tk.Toplevel):
         # ---------------------------------------------------------------------
         sportlist = sorted(self.__handleCSV.sport.keys())
         self.vsportlist = tk.StringVar(value=sportlist)
-        #eventlist = sorted(list(AthleteEvents.get_Olympics_Events_List("str",select=("event",),sport=sportlist[0])))
-        self.veventlist = tk.StringVar()  #value=eventlist)
-        self.vathletelist = tk.StringVar()        
+        self.vathletelist = tk.StringVar()
+        self.veventlist = tk.StringVar()
+        # ---------------------------------------------------------------------
+        self.__sport__,self.__event__ = tk.IntVar(value=0),tk.IntVar(value=0)             
         # ---------------------------------------------------------------------                
         tab_options:dict = {'bd':2,'bg':'tan','relief':'flat','padx':2,'pady':2}        
         for key in list(tab_options.keys()):
             if kwargs.get(key, None) == None: kwargs[key] = tab_options.get(key, None)
         super().__init__(master, *args, **kwargs)  
-        # ---------------------------------------------------------------------                
+        # ---------------------------------------------------------------------
+        self.event_add("<<AthleteSelect>>",'<Double-Button-1>','<Return>','<KP_Enter>')         
         self.protocol("WM_DELETE_WINDOW", self.Quit)
         self.minsize(1280,700)              # - taille minimun fenetre       
         self.title(toplevel_Title)          # - Tetre de la fenetre modale
@@ -180,28 +186,33 @@ class GUI_SearchSportEvt(tk.Toplevel):
                                                                  font=self.lbl_font,text=text,pad=(2,2,0,0))
         # ---------------------------------------------------------------------
         frameButtons= My_LabelFrame(frameAthlete,cspan=16,bg='#FCEEDA',pad=(2,2,0,3)) 
-        tk.Button(frameButtons,text=" Athlète ",command=lambda mode="Ath":self.__sorted__(mode),relief="flat",
+        tk.Button(frameButtons,text=" Athlète ",command=lambda mode="Ath":self.__sorted__(None,mode),relief="flat",
                           bg="#FCEED5",overrelief="flat",font=self.spb_font).grid(column=2,row=0,columnspan=2,sticky=('w'))
-        tk.Button(frameButtons,text="  Genre  ",command=lambda mode="Sex":self.__sorted__(mode),relief="flat",
+        tk.Button(frameButtons,text="  Genre  ",command=lambda mode="Sex":self.__sorted__(None,mode),relief="flat",
                           bg="#FCEED5",overrelief="flat",font=self.spb_font).grid(column=5,row=0,columnspan=2,sticky=('w'))
-        tk.Button(frameButtons,text="Olympiade",command=lambda mode="Oly":self.__sorted__(mode),relief="flat",
+        tk.Button(frameButtons,text="Olympiade",command=lambda mode="Oly":self.__sorted__(None,mode),relief="flat",
                           bg="#FCEED5",overrelief="flat",font=self.spb_font).grid(column=8,row=0,columnspan=2,sticky=('w'))
-        tk.Button(frameButtons,text="Pays/Fed.",command=lambda mode="Noc":self.__sorted__(mode),relief="flat",
+        tk.Button(frameButtons,text="Pays/Fed.",command=lambda mode="Noc":self.__sorted__(None,mode),relief="flat",
                           bg="#FCEED5",overrelief="flat",font=self.spb_font).grid(column=11,row=0,columnspan=2,sticky=('w'))
-        tk.Button(frameButtons,text="Classement",command=lambda mode="Rnk":self.__sorted__(mode),relief="flat",
+        tk.Button(frameButtons,text="Classement",command=lambda mode="Rnk":self.__sorted__(None,mode),relief="flat",
                           bg="#FCEED5",overrelief="flat",font=self.spb_font).grid(column=14,row=0,columnspan=2,sticky=('w'))
         # ---------------------------------------------------------------------
-        self.athlete_list = ScrolledListbox(frameAthlete,self.vathletelist,row=1,cspan=16,rspan=16,bg="#FCF8F5",font=self.lbl_font,vbar=True,vsel=True)
-        self.athlete_list.bind("<<ListboxSelect>>", self.__win_event)
+        self.athlete_list = ScrolledListbox(frameAthlete,self.vathletelist,row=1,cspan=16,name="!athleteScrlBox",
+                                                       rspan=16,bg="#FCF8F5",font=self.lbl_font,vbar=True,vsel=True)
+        self.athlete_list.bind("<<AthleteSelect>>", self.__win_event)
         self.athlete_list.selection_set(0)
         self.athlete_list.activate(0)        
         # ---------------------------------------------------------------------
-        self.event_list = ScrolledListbox(frameEvent,self.veventlist,cspan=16,rspan=4,bg="#FCF8F5",vbar=True,vsel=True)
+        
+        self.event_list = ScrolledListbox(frameEvent,self.veventlist,cspan=16,name="!eventScrlBox",
+                                                              rspan=4,bg="#FCF8F5",vbar=True,vsel=True)
         self.event_list.bind("<<ListboxSelect>>", self.__select_athlete)
         self.event_list.selection_set(0)
         self.event_list.activate(0)        
+        
         # ---------------------------------------------------------------------
-        self.sport_list = ScrolledListbox(frameSport,self.vsportlist,cspan=4,rspan=20,bg="#FCF8F5",vbar=True,vsel=True)
+        self.sport_list = ScrolledListbox(frameSport,self.vsportlist,cspan=4,name="!sportScrlBox",
+                                                              rspan=20,bg="#FCF8F5",vbar=True,vsel=True)
         self.sport_list.bind("<<ListboxSelect>>", self.__select_event)
         self.sport_list.selection_set(0)
         self.sport_list.activate(0)
@@ -209,67 +220,89 @@ class GUI_SearchSportEvt(tk.Toplevel):
         self.sport_list.event_generate("<<ListboxSelect>>")
         
     def __select_event(self, event:tk.Event=None):
-        w = event.widget if event else self.sport_list
+        w = event.widget if event else ScrolledListbox    # self.sport_list
         if w.curselection():
-            idx,sport = w.getSelectItem()
-            #print(f"idx,sport: {idx}, {sport}")
             # ---------- liste des épreuves fonction du sport choisi ----------    
+            idx,sport = w.getSelectItem()
             self.veventlist.set(sorted(list(AthleteEvents.get_Olympics_Events_List("str",select=("event"),sport=sport))))
-            self.__select_athlete(self.event_list.get('active'))
+            self.__select_athlete(event)
+        return 'break'    
 
     def __select_athlete(self, event:tk.Event=None):
         w = event.widget if isinstance(event,tk.Event) else self.event_list
-        if isinstance(event, int):
-            w.selection_set(event)
-            w.activate(event)    
         idx,evt = w.getSelectItem()
-        sport = self.sport_list.get('active')
-        self.__sorted__(self.__mode)
+        if w._name == "!eventScrlBox": 
+            self.__event__.set(idx) 
+            w.activate(idx)
+        elif w._name == "!sportScrlBox":
+            self.event_list.activate(self.__event__.get())
+            self.__sport__.set(idx)
+        # --------- Affichage de la liste des athlètes selon '__mode' ---------
+        self.__sorted__(event, self.__mode)
+        return 'break'
             
-    def __sorted__(self, mode:CMODETYPE="Ath"):
+    def __sorted__(self, evt:tk.Event, mode:CMODETYPE="Ath"):
         # ---------------------------------------------------------------------
         def position(pos:str) -> int:
             return int(pos) if pos.isdigit() else sum([ord(c) for c in pos])
         # ---------------------------------------------------------------------
-        sport, event = self.sport_list.get('active'), self.event_list.get('active')
+        def athletes(sport:str, event:str) -> list:
+            return AthleteEvents.get_Olympics_Events_List("obj",sport=sport,event=event)
+        # ---------------------------------------------------------------------
+        if evt and evt.widget._name == "!sportScrlBox":
+            sport = evt.widget.getSelectItem()[1]
+            event = self.event_list.get('active')
+        elif evt and evt.widget._name == "!eventScrlBox":
+            sport = self.sport_list.get('active')
+            event = evt.widget.getSelectItem()[1]
+        else:
+            sport, event = self.sport_list.get('active'), self.event_list.get('active')
         # ---------------------------------------------------------------------
         if mode == "Ath":
-            athletelist = sorted(AthleteEvents.get_Olympics_Events_List("obj",sport=sport,event=event),key=lambda ae:ae.name)
+            athletelist = sorted(athletes(sport=sport,event=event),key=lambda ae:ae.name)
         elif mode == "Sex":
-            athletelist = sorted(AthleteEvents.get_Olympics_Events_List("obj",sport=sport,event=event),key=lambda ae:ae.sex)
+            athletelist = sorted(athletes(sport=sport,event=event),key=lambda ae:ae.sex)
         elif mode == "Oly":
-            athletelist = sorted(AthleteEvents.get_Olympics_Events_List("obj",sport=sport,event=event),key=lambda ae:ae.edition)
+            athletelist = sorted(athletes(sport=sport,event=event),key=lambda ae:ae.edition)
         elif mode == "Noc":
-            athletelist = sorted(AthleteEvents.get_Olympics_Events_List("obj",sport=sport,event=event), 
-                                       key=lambda ae:Athlete.ATHLETES_Dico.get(ae.athlete_id, Athlete.DumATHLETE()).country.noc)
+            athletelist = sorted(athletes(sport=sport,event=event), 
+                              #key=lambda ae:Athlete.ATHLETES_Dico.get(ae.athlete_id, Athlete.DumATHLETE()).country.noc)
+                                    key=lambda ae:Athlete.Get_Athlete(ae.athlete_id).country.noc)
         elif mode == "Rnk":
-            athletelist = sorted(AthleteEvents.get_Olympics_Events_List("obj",sport=sport,event=event),key=lambda ae:position(ae.position))
+            athletelist = sorted(athletes(sport=sport,event=event),key=lambda ae:position(ae.position))
         else:
-            athletelist = AthleteEvents.get_Olympics_Events_List("obj",sport=sport,event=event)
+            athletelist = athletes(sport=sport,event=event)
         # ---------------------------------------------------------------------
         if athletelist:
             maxl1 = len(max(athletelist, key=lambda ae:len(ae.name)).name)
             maxl2 = len(f"{max(athletelist, key=lambda ae:ae.athlete_id).athlete_id}")
             maxlength = max(0, maxl1 + maxl2)+3
         else:
-            self.vathletelist.set("")  #maxlength = 3    
-        self.vathletelist.set(list(map(lambda ae:self.__get_athleteEvent(ae, maxlength), athletelist)))
+            self.vathletelist.set("")
+        # ----------- Création de la liste des athlètes à afficher ------------  
+        self.vathletelist.set(list(map(lambda ae:self.__get_athleteEvent(ae, maxlength), athletelist)))        
         self.__mode = mode
-                
+        return 'break'
+            
+    def __win_event(self, event:tk.Event=None):
+        w = event.widget if isinstance(event,tk.Event) else self.athlete_list
+        if  w.curselection() and  w._name == "!athleteScrlBox":  
+            idx,sport = w.getSelectItem()
+            found = RE_ATHLETE.search(sport).groups()
+            if found:
+                self.__resultat_infowin.athlete = self.__handleCSV.athlete.get(int(found[0]))
+            w.selection_set(idx)
+            w.activate(idx)
+        return 'break'    
+            
     def __get_athleteEvent(self, athevent:AthleteEvents, maxl:int) -> str:
         dummy = f"{athevent.name} ({athevent.athlete_id})"
         name = f"{dummy:<{maxl}}"; sex = f"({athevent.sex[0]})"
-        dummy = Athlete.ATHLETES_Dico.get(athevent.athlete_id, Athlete.DumATHLETE()).country.noc
+        dummy = self.__handleCSV.athlete.get(athevent.athlete_id, Athlete.DumATHLETE()).country.noc
         noc = f"{dummy}" if not "No" in dummy else "   "
         medal = f" Medal: {athevent.medal}" if athevent.medal in medalType_list else f"Pos: {athevent.position}"
         event =  f"{athevent.edition} ({athevent.city}), {athevent.sport} ({athevent.event}) {medal}"
         return f"{name}{sex} - {noc} : {event}"
-
-    def __win_event(self, event:tk.Event=None):
-        w = event.widget if event else self.athlete_list
-        if w.curselection():
-            idx,sport = w.getSelectItem()
-            print(f"idx,sport: {idx}, {sport}")        
     
     def Quit(self):
         self.destroy()
@@ -302,7 +335,7 @@ class GUI_EditionGame(tk.Frame):
         # ----------- création de la liste des editions olympiques ------------
         self.editionsList = list(map(lambda ed:ed.edition.strip(),list(sorted(data.values(),key=lambda ed:(ed.year,ed.edition_id),reverse=False))))
         self.veditiongame = tk.StringVar(value=self.editionsList, name="!veditionGame")
-        # --------- Création de la fenètre cachée d'info des athlètes ---------
+        # ----- Création/Initialisation de la fenètre d'info des athlètes -----
         self.__athlete_infowindow = Athlete_InfoWindow(master)        
         
         self.consol10 = tkFont.Font(family='Consolas', size=10, weight='bold', slant='italic') 
@@ -321,7 +354,7 @@ class GUI_EditionGame(tk.Frame):
         self.grid_anchor('center')
         
         self.editGame_Scrollbox = ScrolledListbox(self.master,self.veditiongame,0,0,cspan=self.BSPAN,rspan=rspan,vsel=True,
-                            pad=pad,ffont=self.consol10,ftext="  Editions Olympiques  ",width=20,sticky="nsew")
+                                            pad=pad,ffont=self.consol10,ftext="  Editions Olympiques  ",width=20,sticky="nsew")
         self.editGame_Scrollbox.bind("<<ListboxSelect>>", self.get_select_EditionGame)
         self.editGame_Scrollbox.select_set(0)
         self.editGame_Scrollbox.activate(0)
@@ -342,11 +375,11 @@ class GUI_EditionGame(tk.Frame):
         # ---------------------------------------------------------------------
         self.vathletelist.initialize(["Veuillez sélectionner un pays pour visualiser les athlètes ayant participés à cette Olympiade.",])
         self.selected_edit = self.edition_dico[self.editGame_Scrollbox.get(0)]
-        #print(f"class GUI_EditionGame__selected_edit: {self.selected_edit}")
+        print(f"class GUI_EditionGame__selected_edit: {self.selected_edit}")
         self.create_edition_frame(0)
 
     def get_select_EditionGame(self, event:tk.Event=None):
-        if event:
+        if event is not None:
             w = event.widget
             if w.curselection() and w == self.editGame_Scrollbox:
                 selected = w.get(int(w.curselection()[0])).strip()
@@ -369,7 +402,6 @@ class GUI_EditionGame(tk.Frame):
             return 'break'
         else:
             self.complete_edition_frame(index)
-            self.editGame_Scrollbox.focus()
             self.old_selected = index 
             self.editFrame.grid()
 
@@ -377,23 +409,28 @@ class GUI_EditionGame(tk.Frame):
         return min(max(2,height),maxi)
 
     def __unmarkMarkSelected(self, index:int):
+        """ Methode permettant de dé-selectionner puis sélectionner la nouvelle 
+            édition Olympique choisie par l'intermédiaire de la liste des Villes 
+            organisatrices ou de la liste des pays organisateurs.
+        """
         # ---------------------------------------------------------------------
         self.statebar.update_vltexte(" Info : Lecture des données en cours ...")
         # ---------------------------------------------------------------------
         self.editGame_Scrollbox.unmark_selected(None)                
-        self.editGame_Scrollbox.selection_set(index)
         self.editGame_Scrollbox.marked_Selected = [index,]
+        self.editGame_Scrollbox.activate(index=index)
+        self.editGame_Scrollbox.select_set(index)
         self.editGame_Scrollbox.see(index=index)
+
 
     def create_Info_Ville(self, edition:EditionGame):
         dummy = list(map(lambda cl:f"Ed.{cl.edition_id:>3} - {cl.edition} - {cl.competition_date if TIRET not in cl.competition_date else cl.isHeld}",
                                     list(filter(lambda c:c.city == edition.city and c.edition_id != edition.edition_id, EditionGame.EDITIONS_List))))
         self.vcitylist.set(sorted(dummy, key=lambda c:c.split('-')[0]))
         title = f" Autres éditions Olympiques dans cette même ville: {edition.city} "
-        self.cityList = ScrolledListbox(self.editFrame, self.vcitylist,col=0,row=3,bg="#E0FCC1",frelief="ridge",
-                                            pad=(10,5,0,0),ffont=('Consolas 9 bold italic'),fbg="#E0FCC1",cspan=self.CSPAN//2,vsel=True,
-                                                            selectbackground="#E0FCC1",name="!cityListBox",activestyle="dotbox",ftext=title,
-                                                                       font=self.lbx_font,height=self.__scHeight(len(dummy),3),vbar=(len(dummy)>3))
+        self.cityList = ScrolledListbox(self.editFrame, self.vcitylist,col=0,row=3,bg="#E0FCC1",frelief="ridge",name="!cityListBox",
+                                pad=(10,5,0,0),ffont=('Consolas 9 bold italic'),fbg="#E0FCC1",cspan=self.CSPAN//2,vsel=True,ftext=title,
+                                            activestyle="dotbox",font=self.lbx_font,height=self.__scHeight(len(dummy),3),vbar=(len(dummy)>3))
         self.cityList.bind("<<ListboxSelect>>", self.get_event_InfoVille)
         self.cityList.activate(0)
 
@@ -417,8 +454,8 @@ class GUI_EditionGame(tk.Frame):
         title = f" Autres éditions Olympiques dans le même pays: {COUNTRY_Dico[Country.NOC_Dict[edition.noc].country]} "
         self.countryList = ScrolledListbox(self.editFrame, self.vcountrylist,col=self.CSPAN//2,row=3,bg="#AEE5FF",vbar=(len(dummy)>3),
                                                     name="!countryListBox",pad=(10,5,0,0),frelief="ridge",ffont=('Consolas 9 bold italic'),
-                                                        vsel=True,fbg="#AEE5FF",selectbackground="#AEE5FF",cspan=1+self.CSPAN//2,font=self.lbx_font,
-                                                                ftext=title,selectborderwidth=0,activestyle="dotbox",height=self.__scHeight(len(dummy),3))
+                                                                vsel=True,fbg="#AEE5FF",cspan=1+self.CSPAN//2,font=self.lbx_font,ftext=title,
+                                                                      selectborderwidth=0,activestyle="dotbox",height=self.__scHeight(len(dummy),3))
         self.countryList.bind("<<ListboxSelect>>", self.get_event_CountryList)
         self.countryList.activate(0)
     
@@ -460,25 +497,25 @@ class GUI_EditionGame(tk.Frame):
         # -------------------------------------------------------------
         title = f" Pays ayant participés à cette Olympiade: {total_medals} médailles gagnées "
         self.medaltallyList = ScrolledListbox(self.editFrame, self.vmedaltally,col=0,row=5,bg="#D6C6EB",font=self.consol10,
-                            ftext=title,frelief="ridge",ffont=self.consol10,fbg="#D6C6EB",selectborderwidth=0,pad=(10,10,0,0),vsel=True,
-                                cspan=self.CSPAN//2,name='!medalTallyBox',height=self.__scHeight(len(dummy),12),vbar=(len(dummy)>12),selectbackground="#D6C6EB")
+                        ftext=title, frelief="ridge",ffont=self.consol10, fbg="#D6C6EB", selectborderwidth=0, pad=(10,10,0,0),vsel=True,
+                           activestyle="dotbox",cspan=self.CSPAN//2,name='!medalTallyBox',height=self.__scHeight(len(dummy),12),vbar=(len(dummy)>12))
         self.medaltallyList.bind("<<ListboxSelect>>", self.get_select_SportList)
         # -------------------------------------------------------------
         title2 = f" Evènements sportif de cette Olympiade: {len(dummy2)} épreuves "
         self.sporteventList = ScrolledListbox(self.editFrame,self.vsportevent,col=self.CSPAN//2,row=5,bg="#F0E4A4",font=self.consol10,
-                                 frelief="ridge",ffont=self.consol10,fbg="#F0E4A4",selectborderwidth=0,cspan=1+self.CSPAN//2,pad=(10,10,0,0),vsel=True,
-                                    ftext=title2,name='!sportEventBox',height=self.__scHeight(len(dummy2),12),vbar=(len(dummy2)>12),selectbackground="#F0E4A4")
+                        vsel=True,frelief="ridge",ffont=self.consol10,fbg="#F0E4A4",selectborderwidth=0,cspan=1+self.CSPAN//2,pad=(10,10,0,0),
+                                   activestyle="dotbox",ftext=title2,name='!sportEventBox',height=self.__scHeight(len(dummy2),12),vbar=(len(dummy2)>12))
         self.sporteventList.bind("<<ListboxSelect>>", self.get_select_EventList)
         # -------------------------------------------------------------
         labelText = f"{' Nom des athlètes':^26}{'Sports et épreuves':^150}{'Classement':^30}"
         frameText = f"\tPays : {COUNTRY_Dico[Country.NOC_Dict[edition.noc].country]:^40}Olympiade (Ed.{edition.edition_id}):{edition.edition:^30}"
         self.athLblFrame = My_LabelFrame(self.editFrame,col=0,row=8,cspan=self.CSPAN,pad=(10,10,5,5),rspan=9,
                                                                             bg="#FFE3D3",text=frameText,font=self.lbl_font) 
-        self.sportathletelistbox = ScrolledListbox(self.athLblFrame,self.vathletelist,col=0,row=0,cspan=self.CSPAN,
-                   rspan=13,ftext=labelText,ffont=self.lbx_font,name="!sportAthleteListbox",vbar=False,font=self.consol10)
+        self.sportathletelistbox = ScrolledListbox(self.athLblFrame,self.vathletelist,col=0,row=0,cspan=self.CSPAN,activestyle="dotbox",
+                                       rspan=13,ftext=labelText,ffont=self.lbx_font,name="!sportAthleteListbox",vbar=False,font=self.consol10)
         self.sportathletelistbox.bind("<<ListboxSelect>>", self.__athlete_InfoWin)
         # -------------------------------------------------------------
-        self.medaltallyList.selection_set(0)
+        #self.medaltallyList.selection_set(0)
         self.medaltallyList.activate(0)
         
     def __createString_Medals(self, mt:MedalTally) -> str:
@@ -491,7 +528,8 @@ class GUI_EditionGame(tk.Frame):
             if w.name() == "!sportAthleteListbox" and w.curselection():
                 athname = w.get(w.curselection()[0]).split(' : ')[0].strip()
                 #print(f"__athlete_InfoWin__w.get(curselection()[0]): {w.get(w.curselection()[0])}")
-                athlete = Athlete.ATHLETES_Dico.get(Athlete.ATHLETE_ID_Dico.get(athname, [0,])[0], Athlete.DumATHLETE())
+                #athlete = Athlete.ATHLETES_Dico.get(Athlete.ATHLETE_ID_Dico.get(athname, [0,])[0], Athlete.DumATHLETE())
+                athlete = Athlete.Get_Athlete(Athlete.ATHLETE_ID_Dico.get(athname, [0,])[0])
                 self.__athlete_infowindow.athlete = athlete
         else:        
             print(f"__athlete_InfoWin(event): {event}")
@@ -591,7 +629,7 @@ class GUI_EditionGame(tk.Frame):
         self.create_Info_Ville(edition)
         self.create_Info_Medaltally(edition)
         self.statebar.update_vltexte("", 0)
-        return 'break'
+        self.editGame_Scrollbox.focus()
         
 
 class GUI_SearchAthlete(tk.Toplevel):
@@ -1003,7 +1041,7 @@ puis filtrez sur le 'sport' et/ou l'évènement'"""
     
     def __name_id__(self, w:tk.Widget) -> tuple:
         selected = w.get(w.curselection()[0])            
-        name, id = search(r'^([\D ]+?) \((\d*)',selected,flags=0).groups()
+        name, id = RE_NAMEID.search(selected).groups()
         return name, id
 
     def __select_athlete_by_firstlastname(self, athlete:Athlete) -> bool:
@@ -1038,7 +1076,8 @@ puis filtrez sur le 'sport' et/ou l'évènement'"""
         else:
             name, id = "No athlete", "0"            
         # ---------------------------------------------------------------------            
-        self.__athlete_infowindow.athlete = Athlete.ATHLETES_Dico.get(int(id), Athlete.DumATHLETE())
+        #self.__athlete_infowindow.athlete = Athlete.ATHLETES_Dico.get(int(id), Athlete.DumATHLETE())
+        self.__athlete_infowindow.athlete = Athlete.Get_Athlete(int(id))
         self.__vmultiAthInfo.initialize((name, id))
                         
     def __update_edition(self, event=None):
@@ -1420,7 +1459,6 @@ if __name__ == "__main__":
         print(f"Locale message: {msg}")
     
     root = tk.Tk()
-    root.minsize(640,480)
     root.msgbox = Win_MessageBox(root)
     config = Saveload_CFG()
     if config.cfg_load():
@@ -1432,7 +1470,7 @@ if __name__ == "__main__":
     
     if handlecsv.edition:
         
-        #EdGame = GUI_EditionGame(root, EditionGame.EDITIONS_Dict,0,0,cspan=20,rspan=20)
+        EdGame = GUI_EditionGame(root, EditionGame.EDITIONS_Dict,0,0,cspan=20,rspan=20)
         
         #winnameid = SearchAthlete(root, handleCSV=handlecsv, searchtype="global")
         #winnameid = SearchAthlete(root, handleCSV=handlecsv, searchtype="nom")
@@ -1441,9 +1479,9 @@ if __name__ == "__main__":
         #wincountry = SearchAthlete(root, handleCSV=handlecsv, searchtype="pays")
         #winmulti = SearchAthlete(root, handleCSV=handlecsv, searchtype="multi")
         
-        sportevt = GUI_SearchSportEvt(root, handlecsv, "Ath")
+        #sportevt = GUI_SearchSportEvt(root, handlecsv, "Ath")
                 
-        root.mainloop()
+    root.mainloop()
         
     #print(f"Athlètes: {list(Athlete.ATHLETES_Dico.keys())[:10]}")
     #print(f"Editions: {list(EditionGame.EDITIONS_Dict.keys())[:3]}")

@@ -38,6 +38,8 @@ from typing import Literal,get_args
 from itertools import zip_longest
 from datetime import datetime
 
+DEBUG:bool = True
+
 GENRETYPE = Literal["Homme","Femme","Non genré","Male","Female","No genre"]
 genreType_list = get_args(GENRETYPE)
 # --------------------------------------------------------------------------- #

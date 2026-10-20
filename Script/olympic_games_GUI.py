@@ -38,7 +38,7 @@ import tkinter as tk
 import tkinter.font as tkFont
 
 from PIL import Image,ImageTk
-from hlptools import Help_System
+from hlptools import Help_System,Help_Options
 from handle_csv import Handle_CSV,GUI_EditionGame
 from gui_tools import Win_MessageBox,PopupMenu,Window_StateBar,Parameters
 from linuxprt import Linux_InitPrinters
@@ -49,14 +49,16 @@ class Application(tk.Tk):
     
     def __init__(self):
 
-        tk.Tk.__init__(self, className="Application")
+        tk.Tk.__init__(self, className="OlympicGames")
         print(f" OlympicGames GUI written with Python 3.9 - Tkinter(),Tcl" \
-                    f"v{self.tk.exprstring('$tcl_version')} / {locale.getlocale()}", end=" - ")
+                    f"v{self.tk.exprstring('$tcl_version')} / {locale.getlocale()}")   #, end=" - ")
         
         self.app_parameters = Saveload_CFG()
         if self.app_parameters.cfg_load():
             self.app_options = self.app_parameters.options
             self.__fullscreen = self.app_options.fullscreen
+            path,name = op.basename(self.app_options.datapath),self.app_options.helpfilename
+            Help_options = Help_Options(hlpPath=path,fileName=name,hlpTitle="Aide de OlympicGames GUI v2.5")
             backfname = op.join(os.getcwd(),self.app_options.imagepath,self.app_options.backfilename)
             backImage = Image.open(fp=backfname, mode='r')
             width, height = self.app_options.app_size
@@ -66,7 +68,7 @@ class Application(tk.Tk):
         # ---------------------------------------------------------------------
         self.MessageBox = Win_MessageBox(self)
         self.Printers = Linux_InitPrinters(self)
-        self.help_handler = Help_System(self, self.app_options)
+        self.help_handler = Help_System(self, Help_options)
         self.handle_csv = Handle_CSV(self, self.app_options)
         # ---------------------------------------------------------------------
         self.waitnbr = None
@@ -262,7 +264,7 @@ if __name__ == "__main__":
         print(f"Locale message: {msg}")        
         
     app = Application()
-    app.title("OlympicGames GUI utility V1")
+    app.title("OlympicGames GUI utility V2.5")
     icon = tk.PhotoImage(master=app, file=op.join(IMAGE_PATH,'olympicgames_ico.gif'))
     app.wm_iconphoto(True, icon)
     app.mainloop()

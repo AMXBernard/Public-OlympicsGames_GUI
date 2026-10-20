@@ -1109,17 +1109,19 @@ if __name__ == "__main__":
     root.Printers = Linux_InitPrinters(root)
     if root.app_parameters.cfg_load():
         options = root.app_parameters.options
-        options.createEvtAthFile = False
+        new_options = Parameters(root, options).go()
+        print(f"new_options:\n{new_options}")
+        #options.createEvtAthFile = False
     else:
         print(f"Options not loaded. End of program")
         exit(2) 
     
-    handlecsv = Handle_CSV(root, options=options)
+    #handlecsv = Handle_CSV(root, options=options)
 
-    root.columnconfigure(list(range(20)), weight=1)
-    root.rowconfigure(list(range(20)), weight=1)
+    #root.columnconfigure(list(range(20)), weight=1)
+    #root.rowconfigure(list(range(20)), weight=1)
     
-    message = tk.StringVar( value="")
+    #message = tk.StringVar( value="")
     #msgbox = Win_popup(root,message,title="essai")
     #msgbox.tag_configure("couleur", background="yellow")
     #msgbox.insert("1.0",f"Message\n","name","centre")
@@ -1127,7 +1129,7 @@ if __name__ == "__main__":
     #msgbox.insert("end","Ligne 4\n")
     #msgbox.tag_add("couleur", "4.0","4.end+1c")
     
-    root.infobox.athlete = Athlete.ATHLETES_Dico[45153]
+    #root.infobox.athlete = Athlete.ATHLETES_Dico[45153]
     #root.after(2000, root.infobox.insert_athlete, Athlete.ATHLETES_Dico[57072],False)
     #root.after(2500, root.infobox.insert_athlete, Athlete.ATHLETES_Dico[99797],False)
     #root.after(3000, root.infobox.insert_athlete, Athlete.ATHLETES_Dico[5054],False)
@@ -1138,10 +1140,10 @@ if __name__ == "__main__":
     #root.after(5500, root.infobox.insert_athlete, Athlete.ATHLETES_Dico[701866],False)
     #root.after(6000, root.infobox.insert_athlete, Athlete.ATHLETES_Dico[1005730],False)
     #root.after(6500, root.infobox.insert_athlete, Athlete.ATHLETES_Dico[11857],False)
-    root.after(2000, root.infobox.insert_athlete, Athlete.ATHLETES_Dico[13167],False)
+    #root.after(2000, root.infobox.insert_athlete, Athlete.ATHLETES_Dico[13167],False)
     #root.after(9000, root.infobox.Quit)
     
     #resultats_List = list(set(Resultat.get_Olympics_Results_Details("obj",edition_id=1)))
     #resultbox = Resultat_InfoWindow(root, resultats_List)
     #root.after(9000, root.quit)
-    root.infobox.mainloop()
+    root.mainloop()
