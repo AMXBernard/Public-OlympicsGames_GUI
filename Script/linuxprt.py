@@ -105,7 +105,7 @@ class ShowPrinters(tk.Toplevel):
         lboxTitle = f"{nprt:^30}{pprt:^160}{jprt:^30}"
         lframe = My_LabelFrame(self,bg='khaki',font=self.tle_font,cspan=8,row=0,pad=(2,2,0,0),
                                  rspan=6,text=' Liste des imprimantes du Système ',sticky='nsew')
-        tk.Label(lframe,bg='khaki',font=('Courier\ New 12 bold italic underline'),
+        tk.Label(lframe,bg='khaki',font=('Courier\\ New 12 bold italic underline'),
             text='Imprimante par défaut :').grid(column=0,row=0,columnspan=2,pady=5,sticky='new')
         frame1 = My_LabelFrame(lframe, col=2,row=0,bg="orange",pad=(2,5,0,0),sticky="new",
                                                         cspan=6,name='!frame1_defaultprinter')

@@ -316,7 +316,7 @@ class GUI_EditionGame(tk.Frame):
 
         self.master = master
         self.edition_dico = data
-        self.selected_edit:str = ""
+        self.selected_edit:EditionGame
         self.old_selected = -1
         self.BSPAN = 4
         self.CSPAN = max(8, cspan-self.BSPAN)
@@ -354,13 +354,13 @@ class GUI_EditionGame(tk.Frame):
         self.grid_anchor('center')
         
         self.editGame_Scrollbox = ScrolledListbox(self.master,self.veditiongame,0,0,cspan=self.BSPAN,rspan=rspan,vsel=True,
-                                            pad=pad,ffont=self.consol10,ftext="  Editions Olympiques  ",width=20,sticky="nsew")
+                            name="!editionScrollBox",pad=pad,ffont=self.consol10,ftext="  Editions Olympiques  ",width=20,sticky="nsew")
         self.editGame_Scrollbox.bind("<<ListboxSelect>>", self.get_select_EditionGame)
-        self.editGame_Scrollbox.select_set(0)
         self.editGame_Scrollbox.activate(0)
         
-        self.editFrame = My_LabelFrame(self.master,col=self.BSPAN,row=row,bd=3,relief="groove",font=self.consol10,
-                  text=" Informations sur les éditions des Jeux Olympiques Modernes ",cspan=self.CSPAN,rspan=rspan,pad=(10,10,0,0),sticky="nsew")
+        self.editFrame = My_LabelFrame(self.master,col=self.BSPAN,row=row,bd=3,sticky="nsew",
+                                relief="groove",font=self.consol10,cspan=self.CSPAN,pad=(10,10,0,0),
+                                   rspan=rspan,text=" Informations sur les éditions des Jeux Olympiques Modernes ")
         tk.Label(self.editFrame,bg="ivory",textvariable=self.vedition_msg1,
                     font=self.tle_font).grid(column=0,row=0,columnspan=self.CSPAN,sticky="nsew")
         tk.Label(self.editFrame,bg="ivory",textvariable=self.vedition_msg2,
@@ -369,7 +369,7 @@ class GUI_EditionGame(tk.Frame):
                     font=self.lbl_font).grid(column=0,row=2,columnspan=self.CSPAN,sticky="nsew")
         # ---------------------------------------------------------------------
         defmessage = " Info : Sélectionnez un pays pour afficher les athlètes et les épreuves auquelles ils ont participé."
-        self.statebar = Window_StateBar(self.editFrame,"",0,col=0,row=18,cspan=self.CSPAN,bd=3,relief="sunken",
+        self.statebar = Window_StateBar(self.editFrame,"",0,col=0,row=rspan-1,cspan=self.CSPAN,bd=3,relief="sunken",
                                                 sticky="sew",padx=5,pady=3,txtfont=self.lbx_font,defMessage=defmessage)
         self.editFrame.grid_remove()
         # ---------------------------------------------------------------------
@@ -377,12 +377,14 @@ class GUI_EditionGame(tk.Frame):
         self.selected_edit = self.edition_dico[self.editGame_Scrollbox.get(0)]
         print(f"class GUI_EditionGame__selected_edit: {self.selected_edit}")
         self.create_edition_frame(0)
+        self.editGame_Scrollbox.selection_set(first=0)
 
     def get_select_EditionGame(self, event:tk.Event=None):
-        if event is not None:
+        if event and event.widget._name=="!editionScrollBox":
             w = event.widget
             if w.curselection() and w == self.editGame_Scrollbox:
                 selected = w.get(int(w.curselection()[0])).strip()
+                print(f" ---> selected: {selected}")
                 # -------------------- RAZ of athlete list --------------------
                 if self.selected_edit and selected != self.selected_edit.edition: 
                     self.vathletelist.initialize(["Veuillez sélectionner un pays pour visualiser les athlètes ayant participés à cette Olympiade.",])
@@ -392,16 +394,19 @@ class GUI_EditionGame(tk.Frame):
                     self.statebar.update_vltexte(" Info : Lecture des données en cours ...")
                     self.create_edition_frame(w.curselection()[0])
                 else:
-                    return 'break'    
+                    return 'break'
+            else:
+                return 'break'    
         else:        
-            print(f"get_select_EditionGame(event): {event}")
+            return 'break'
         
     def create_edition_frame(self, index:int):
         if self.editFrame.winfo_ismapped() and self.old_selected == index:
             self.old_selected= -1
-            return 'break'
         else:
             self.complete_edition_frame(index)
+            self.editGame_Scrollbox.selection_set(index)
+            self.editGame_Scrollbox.activate(index)
             self.old_selected = index 
             self.editFrame.grid()
 
@@ -418,8 +423,8 @@ class GUI_EditionGame(tk.Frame):
         # ---------------------------------------------------------------------
         self.editGame_Scrollbox.unmark_selected(None)                
         self.editGame_Scrollbox.marked_Selected = [index,]
+        self.editGame_Scrollbox.select_set(first=index)
         self.editGame_Scrollbox.activate(index=index)
-        self.editGame_Scrollbox.select_set(index)
         self.editGame_Scrollbox.see(index=index)
 
 
@@ -507,15 +512,16 @@ class GUI_EditionGame(tk.Frame):
                                    activestyle="dotbox",ftext=title2,name='!sportEventBox',height=self.__scHeight(len(dummy2),12),vbar=(len(dummy2)>12))
         self.sporteventList.bind("<<ListboxSelect>>", self.get_select_EventList)
         # -------------------------------------------------------------
-        labelText = f"{' Nom des athlètes':^26}{'Sports et épreuves':^150}{'Classement':^30}"
+        labelText = f"{' Nom des athlètes':^40}{f" ":<50}{'Sports et épreuves':^100}{f" ":<50}{'Classement':^30}"
         frameText = f"\tPays : {COUNTRY_Dico[Country.NOC_Dict[edition.noc].country]:^40}Olympiade (Ed.{edition.edition_id}):{edition.edition:^30}"
         self.athLblFrame = My_LabelFrame(self.editFrame,col=0,row=8,cspan=self.CSPAN,pad=(10,10,5,5),rspan=9,
                                                                             bg="#FFE3D3",text=frameText,font=self.lbl_font) 
-        self.sportathletelistbox = ScrolledListbox(self.athLblFrame,self.vathletelist,col=0,row=0,cspan=self.CSPAN,activestyle="dotbox",
-                                       rspan=13,ftext=labelText,ffont=self.lbx_font,name="!sportAthleteListbox",vbar=False,font=self.consol10)
-        self.sportathletelistbox.bind("<<ListboxSelect>>", self.__athlete_InfoWin)
+        self.sportathletelistbox = ScrolledListbox(self.athLblFrame,self.vathletelist,col=0,row=0,
+                              cspan=self.CSPAN,rspan=13,ftext=labelText,ffont=self.lbx_font,vsel=True,
+                                 name="!sportAthleteListbox",activestyle="dotbox",vbar=False,font=self.consol10)
+        self.sportathletelistbox.event_add("<<AthleteSelect>>","<Double-Button-1>","<Return>","<KP_Enter>")
+        self.sportathletelistbox.bind("<<AthleteSelect>>", self.__athlete_InfoWin)
         # -------------------------------------------------------------
-        #self.medaltallyList.selection_set(0)
         self.medaltallyList.activate(0)
         
     def __createString_Medals(self, mt:MedalTally) -> str:
@@ -526,9 +532,7 @@ class GUI_EditionGame(tk.Frame):
         if event and isinstance(event.widget, ScrolledListbox):
             w = event.widget
             if w.name() == "!sportAthleteListbox" and w.curselection():
-                athname = w.get(w.curselection()[0]).split(' : ')[0].strip()
-                #print(f"__athlete_InfoWin__w.get(curselection()[0]): {w.get(w.curselection()[0])}")
-                #athlete = Athlete.ATHLETES_Dico.get(Athlete.ATHLETE_ID_Dico.get(athname, [0,])[0], Athlete.DumATHLETE())
+                athname = w.get(w.curselection()[0]).split(' (',maxsplit=1)[0].strip()
                 athlete = Athlete.Get_Athlete(Athlete.ATHLETE_ID_Dico.get(athname, [0,])[0])
                 self.__athlete_infowindow.athlete = athlete
         else:        
@@ -539,7 +543,8 @@ class GUI_EditionGame(tk.Frame):
         medaille = medaltally_dico.get(sport.medal, '')
         dumAthlete = Athlete(sport.ath_id,sport.athlete.name,"","",0.0,"",Country.NOC_Dict[sport.noc].country,sport.noc,"","",[])
         athlete = sport.athlete if isinstance(sport.athlete, Athlete) else dumAthlete
-        sportEvent = f"{athlete.name:<26} : {sport.sport:<26} ({sport.event})"
+        athlete_name = f"{athlete.name} ({athlete.athlete_id})"
+        sportEvent = f"{athlete_name:<36}: {sport.sport:<26} ({sport.event})"
         position = f"{sport.position}, {medaille} "
         return f"{sportEvent:<130} {position:<10}"
         
@@ -590,6 +595,7 @@ class GUI_EditionGame(tk.Frame):
                 self.vathletelist.set(["Aucun athlète n'a été trouvé pour cette épreuve sportive.",])  
         else:
             print(f"get_select_EventList(event): {event}")
+        return 'break'
 
     def __itemcolor_medalList(self, athletelist:list, listbox:ScrolledListbox):
         """ coloration de la rubrique de la listbox fonction de la médaille """
@@ -629,8 +635,7 @@ class GUI_EditionGame(tk.Frame):
         self.create_Info_Ville(edition)
         self.create_Info_Medaltally(edition)
         self.statebar.update_vltexte("", 0)
-        self.editGame_Scrollbox.focus()
-        
+
 
 class GUI_SearchAthlete(tk.Toplevel):
     

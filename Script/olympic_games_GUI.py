@@ -38,8 +38,8 @@ import tkinter as tk
 import tkinter.font as tkFont
 
 from PIL import Image,ImageTk
+from handle_csv import Handle_CSV
 from hlptools import Help_System,Help_Options
-from handle_csv import Handle_CSV,GUI_EditionGame
 from gui_tools import Win_MessageBox,PopupMenu,Window_StateBar,Parameters
 from linuxprt import Linux_InitPrinters
 
@@ -169,6 +169,7 @@ class Application(tk.Tk):
         self.update()
 
     def creer_widgets(self):
+        from handle_csv import GUI_EditionGame
         # ----- Création du tk.Canvas() pour affichage de l'image de fond -----
         self.background = tk.Canvas(self, bd=3, relief='ridge', bg='light blue', name="!backgroundCanvas")
         self.back_image = self.background.create_image(0,0, image=self.backImage, 

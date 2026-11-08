@@ -376,7 +376,7 @@ class Win_popup(tk.Toplevel):
         self.scrtxt = ScrolledText(frame1,bg='ivory',font=self.txt_font,wrap='word',relief='flat',bd=2,exportselection=True)
         self.scrtxt.grid(column=0,row=0,columnspan=10,rowspan=10,sticky="nsew")
         # - configuration des tags pour mise en évidence des termes sélectionnés 
-        self.scrtxt.tag_configure("name",background="wheat",font=('Courier\ New 18 bold italic'))
+        self.scrtxt.tag_configure("name",background="wheat",font=('Courier\\ New 18 bold italic'))
         self.scrtxt.tag_configure("titre",font=('Helvetica 14 bold italic'),justify="center")
         self.scrtxt.tag_configure("event", background="#FCFBD0",relief='sunken',border=2,spacing1=3,spacing2=3,spacing3=0)
         self.scrtxt.tag_configure("description", background="#CAFAB7",spacing1=5,spacing3=5)
@@ -571,9 +571,9 @@ class Athlete_InfoWindow(Win_popup):
             self.deiconify()
     
     def __special_format(self, raw_special) -> str:
-        """ Extraction des Evènements sportifs et épreuves associées 
-            regex: "Listed in Olympians Who (Won a Medal at|Died in|Participated in|Set a) ((?:the|World)[^()]*?(?:\([^)]+|[^\d)]+\))?) \(([^)]+(?:\)[^A-Za-z0-9;]*;[^)]+)*[)(, :–\-\w\/]+)"
-                   "Listed in Olympians Who (Won a Medal at|Died in|Participated in|Set a|Acted in) ((?:the|World|Movies)[^()]*?(?:\([^)]+|[^\d)]+\))?) \(([^)]+(?:\)[^A-Za-z0-9;]*;[^)]+)*[)(,\S]+)(?:\)|.\))"
+        """ Extraction des Evènements sportifs et épreuves associées par regex:
+            'Listed in Olympians Who (Won a Medal at|Died in|Participated in|Set a) ((?:the|World)[^()]*?(?:\\([^)]+|[^\\d)]+\\))?) \\(([^)]+(?:\\)[^A-Za-z0-9;]*;[^)]+)*[)(, :–\\-\\w\\/]+)'
+            "Listed in Olympians Who (Won a Medal at|Died in|Participated in|Set a|Acted in) ((?:the|World|Movies)[^()]*?(?:\\([^)]+|[^\\d)]+\\))?) \\(([^)]+(?:\\)[^A-Za-z0-9;]*;[^)]+)*[)(,\\S]+)(?:\\)|.\\))"
         """
         pattern = re.compile(
             r"Listed in Olympians Who (Won a Medal at|Died in|Participated in|Set a|Acted in) ((?:the|World|Movies)[^()]*?(?:\([^)]+|[^\d)]+\))?) \(([^)]+(?:\)[^A-Za-z0-9;]*;[^)]+)*[)(,\S]+)(?:\)|.\))",
@@ -671,7 +671,7 @@ class Parameters(tk.Toplevel):
         self.vradioScale = tk.DoubleVar(value=self.witchScale(self.vsearchScale.get()))
         self.vhomonynId = tk.IntVar(value=int(self.__options.search_options.multiId))   #
         self.vregexp = tk.IntVar(value=int(self.__options.search_options.regexp))       #
-        self.vregexval = tk.StringVar(value="r'\sAdam*?'")
+        self.vregexval = tk.StringVar(value=r'\sAdam*?')
         #----------------------------------------------------------------------
         My_Datetime.Long = self.__options.datelong
         self.vdatelong = tk.IntVar(value=int(self.__options.datelong))                  #
@@ -871,7 +871,7 @@ class Parameters(tk.Toplevel):
                                               variable=self.vseparatorCSV,).grid(column=2,row=0,padx=10,sticky="w")
         tk.Radiobutton(lframeRWcsv,bg=lframeRWcsv.cget('bg'),bd=0,text=":Tabulation",value='\t',font=self.lblfont,
                                               variable=self.vseparatorCSV,).grid(column=3,row=0,padx=10,sticky="w")
-        tk.Radiobutton(lframeRWcsv,bg=lframeRWcsv.cget('bg'),bd=0,text=":Espace",value='\h032',font=self.lblfont,
+        tk.Radiobutton(lframeRWcsv,bg=lframeRWcsv.cget('bg'),bd=0,text=":Espace",value=r'\h032',font=self.lblfont,
                                               variable=self.vseparatorCSV,).grid(column=4,row=0,padx=10,sticky="w")
         # ---------------------------------------------------------------------
         title = f" Options d'affichage de l'application "

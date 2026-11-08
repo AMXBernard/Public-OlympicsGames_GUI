@@ -28,17 +28,19 @@ under certain conditions; type `show c' for details.
 
 import os
 import cups
-import locale
+import locale, sys
 import os.path as op
 import pickle as pkdata
 
 from re import compile,IGNORECASE
-#from dataclasses import dataclass
 from typing import Literal,get_args
 from itertools import zip_longest
 from datetime import datetime
 
-DEBUG:bool = True
+
+PLATFORM = sys.platform
+DEBUG:bool = False
+if len(sys.argv) > 1 and "debug" in sys.argv[1].lower(): DEBUG = True
 
 GENRETYPE = Literal["Homme","Femme","Non genré","Male","Female","No genre"]
 genreType_list = get_args(GENRETYPE)
@@ -158,19 +160,6 @@ def correct_edition(edition:str) -> str:
     else:
         return f"{edition.replace('  ',' ').strip()} Olympics"
             
-
-"""
-@dataclass
-class Global_AthletesList(object):
-    name:str
-    country:str
-    edition:str
-    city:str
-    sport:str
-    
-    def __str__(self) -> str:
-        return f"{self.name:<40}|{self.country}|{self.edition:<20}|{self.city:<20}|{self.sport}"
-"""        
 
 class My_Datetime(datetime):
 
